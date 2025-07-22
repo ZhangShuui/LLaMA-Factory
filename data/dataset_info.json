@@ -8,6 +8,13 @@
   "alpaca_zh_demo": {
     "file_name": "alpaca_zh_demo.json"
   },
+  "prism_convo": {
+    "file_name": "/home/zyangdm/ROLL/Personality-Alignment/dialogue_dataset_all_v2_nothink.jsonl",
+    "columns": {
+      "prompt": "prompt",
+      "response": "output"
+    }
+  },
   "glaive_toolcall_en_demo": {
     "file_name": "glaive_toolcall_en_demo.json",
     "formatting": "sharegpt",
