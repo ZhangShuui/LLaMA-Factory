@@ -1,0 +1,90 @@
+### model
+model_name_or_path: Qwen/Qwen3-8B
+reward_model: Skywork/Skywork-Reward-V2-Qwen3-8B
+trust_remote_code: true
+
+### method
+stage: ppo
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+reward_model_type: full
+
+### dataset
+dataset: prism_convo
+template: qwen3
+cutoff_len: 2048
+max_samples: 1000
+overwrite_cache: true
+preprocessing_num_workers: 32  # 8卡*4线程
+dataloader_num_workers: 16     # 8卡*2线程
+packing: true
+neat_packing: true  # 更高效的打包策略
+
+### output
+output_dir: saves/qwen3-8b/lora_ppo_8gpu_h800
+logging_steps: 10
+save_steps: 200  # 更频繁保存以防意外
+plot_loss: true
+overwrite_output_dir: true
+report_to: wandb
+run_name: qwen3-8b-lora-ppo-8gpu-h800
+
+### acceleration & optimization
+# DeepSpeed ZeRO-2 configuration for 8-GPU H800
+deepspeed: examples/deepspeed/ds_z2_8gpu_h800_config.json
+
+# Attention optimization
+flash_attn: fa2
+
+# Memory and computation optimization
+gradient_checkpointing: true
+torch_compile: true
+torch_compile_backend: inductor
+torch_compile_mode: reduce-overhead  # 专为多GPU优化
+
+# Data loading optimization - H800优化
+dataloader_pin_memory: true
+dataloader_persistent_workers: true
+dataloader_prefetch_factor: 4  # H800的高带宽优化
+group_by_length: true
+remove_unused_columns: true
+dataloader_drop_last: true
+
+# Advanced optimizations
+use_liger_kernel: true  # Liger内核优化
+include_tokens_per_second: true
+skip_memory_metrics: false
+ddp_find_unused_parameters: false  # 多GPU优化
+
+### train
+per_device_train_batch_size: 8  # H800 80GB显存，可以更大
+gradient_accumulation_steps: 1   # 8卡已经有足够的并行度
+learning_rate: 2.0e-5           # 8卡可以用更高学习率
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+
+# Memory efficiency for H800
+save_total_limit: 5  # H800存储充足，可以保存更多检查点
+save_only_model: false  # H800显存充足，可以保存完整状态
+eval_accumulation_steps: 2  # 评估时的累积步数
+
+# 8-GPU specific optimizations
+ddp_backend: nccl
+ddp_bucket_cap_mb: 200  # H800的高带宽优化
+
+### PPO specific optimizations
+ppo_buffer_size: 1
+ppo_epochs: 4
+ppo_score_norm: false
+ppo_target: 6.0
+ppo_whiten_rewards: false
+
+### generate
+max_new_tokens: 512
+top_k: 0
+top_p: 0.9

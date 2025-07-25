@@ -1,0 +1,93 @@
+### model
+model_name_or_path: Qwen/Qwen3-8B
+reward_model: Skywork/Skywork-Reward-V2-Qwen3-8B
+trust_remote_code: true
+
+### method
+stage: ppo
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+reward_model_type: full
+
+### dataset
+dataset: prism_convo
+template: qwen3
+cutoff_len: 3072       # H800显存充足，可增加序列长度
+max_samples: 1000
+overwrite_cache: true
+preprocessing_num_workers: 32
+dataloader_num_workers: 16
+packing: true
+neat_packing: true
+
+### output
+output_dir: saves/qwen3-8b/lora_ppo_8gpu_h800_aggressive
+logging_steps: 10       
+save_steps: 1000        
+plot_loss: true
+overwrite_output_dir: true
+report_to: wandb
+run_name: qwen3-8b-lora-ppo-8gpu-h800-aggressive
+
+### acceleration & optimization
+# DeepSpeed ZeRO-2 configuration for 8-GPU H800
+deepspeed: examples/deepspeed/ds_z2_8gpu_h800_config.json
+
+# Attention optimization
+flash_attn: fa2
+
+# Aggressive memory and computation optimization
+gradient_checkpointing: false  # H800显存充足，关闭以提速
+torch_compile: true
+torch_compile_backend: inductor
+torch_compile_mode: max-autotune  # 最激进的编译优化
+
+# Data loading optimization - 最激进配置
+dataloader_pin_memory: true
+dataloader_persistent_workers: true
+dataloader_prefetch_factor: 8   # 最大预取
+group_by_length: true
+remove_unused_columns: true
+dataloader_drop_last: true
+
+# Advanced optimizations
+use_liger_kernel: true
+include_tokens_per_second: true
+skip_memory_metrics: true       # 跳过内存监控以提速
+ddp_find_unused_parameters: false
+average_tokens_across_devices: true  # 精确的token计算
+
+### train
+per_device_train_batch_size: 12  # 最大化batch size
+gradient_accumulation_steps: 1   
+learning_rate: 3.0e-5           # 更高学习率配合大batch
+num_train_epochs: 3.0
+lr_scheduler_type: cosine_with_restarts  # 更复杂的学习率调度
+warmup_ratio: 0.05              # 减少warmup比例
+bf16: true
+ddp_timeout: 300000000
+
+# Aggressive memory efficiency
+save_total_limit: 10
+save_only_model: false
+eval_accumulation_steps: 1
+
+# 8-GPU aggressive optimizations
+ddp_backend: nccl
+ddp_bucket_cap_mb: 500    # 更大的通信桶
+optim: adamw_torch_fused  # 融合优化器
+
+### PPO specific optimizations
+ppo_buffer_size: 2        # 增加buffer size
+ppo_epochs: 6             # 更多PPO轮次
+ppo_score_norm: true      # 启用score normalization
+ppo_target: 6.0
+ppo_whiten_rewards: true  # 启用reward whitening
+
+### generate
+max_new_tokens: 1024      # 增加生成长度
+top_k: 0
+top_p: 0.9
+temperature: 0.95

@@ -9,7 +9,7 @@
     "file_name": "alpaca_zh_demo.json"
   },
   "prism_convo": {
-    "file_name": "/home/zyangdm/ROLL/Personality-Alignment/dialogue_dataset_all_v2_nothink.jsonl",
+    "file_name": "/home/zyangdm/ROLL/Personality-Alignment/split_data/train_user_based.jsonl",
     "columns": {
       "prompt": "prompt",
       "response": "output"

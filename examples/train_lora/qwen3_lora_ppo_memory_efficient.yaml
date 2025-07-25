@@ -1,0 +1,65 @@
+### model
+model_name_or_path: Qwen/Qwen3-8B
+reward_model: Skywork/Skywork-Reward-V2-Qwen3-8B
+trust_remote_code: true
+
+### method
+stage: ppo
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+reward_model_type: lora  # 使用LoRA reward model以节省内存
+
+### dataset
+dataset: prism_convo
+template: qwen3
+cutoff_len: 1536  # 减少序列长度以节省内存
+max_samples: 1000
+overwrite_cache: true
+preprocessing_num_workers: 8
+dataloader_num_workers: 4
+packing: true
+
+### output
+output_dir: saves/qwen3-8b/lora_ppo_memory_efficient
+logging_steps: 20
+save_steps: 1000
+plot_loss: true
+overwrite_output_dir: true
+report_to: wandb
+run_name: qwen3-8b-lora-ppo-memory-efficient
+
+### acceleration & optimization
+# DeepSpeed ZeRO-3 for maximum memory efficiency
+deepspeed: examples/deepspeed/ds_z3_config.json
+
+# Memory optimization
+flash_attn: fa2
+gradient_checkpointing: true
+use_reentrant_gc: false  # 使用非重入式梯度检查点
+
+# Data optimization
+dataloader_pin_memory: false  # 在内存受限时禁用
+group_by_length: true
+dataloader_drop_last: true
+
+### train
+per_device_train_batch_size: 1  # 小batch size适配内存限制
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-5
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+
+# Memory management
+save_total_limit: 2
+save_only_model: true
+torch_empty_cache_steps: 100  # 定期清理缓存
+
+### generate
+max_new_tokens: 256  # 减少生成长度
+top_k: 0
+top_p: 0.9
