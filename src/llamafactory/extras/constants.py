@@ -126,6 +126,7 @@ class QuantizationMethod(str, Enum):
     QUANTO = "quanto"
     EETQ = "eetq"
     HQQ = "hqq"
+    MXFP4 = "mxfp4"
 
 
 class RopeScaling(str, Enum):
@@ -942,6 +943,21 @@ register_model_group(
             DownloadSource.MODELSCOPE: "goodbai95/GPT2-xl",
         },
     },
+)
+
+
+register_model_group(
+    models={
+        "GPT-OSS-20B-Thinking": {
+            DownloadSource.DEFAULT: "openai/gpt-oss-20b",
+            DownloadSource.MODELSCOPE: "openai/gpt-oss-20b",
+        },
+        "GPT-OSS-120B-Thinking": {
+            DownloadSource.DEFAULT: "openai/gpt-oss-120b",
+            DownloadSource.MODELSCOPE: "openai/gpt-oss-120b",
+        },
+    },
+    template="gpt",
 )
 
 
